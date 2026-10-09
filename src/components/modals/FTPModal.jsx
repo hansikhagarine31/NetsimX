@@ -4,11 +4,6 @@ import { X, HardDrive, UploadCloud, DownloadCloud, FileText, CheckCircle2, Lock 
 
 export function FTPModal() {
   const store = useNetworkStore();
-  if (!store.modals.ftp) return null;
-
-  const onClose = () => {
-    networkStore.setState({ modals: { ...store.modals, ftp: false } });
-  };
 
   const [connected, setConnected] = useState(false);
   const [username, setUsername] = useState('admin');
@@ -20,6 +15,15 @@ export function FTPModal() {
   ]);
   const [newFileName, setNewFileName] = useState('');
   const [transferProgress, setTransferProgress] = useState(null);
+
+  if (!store.modals.ftp) return null;
+
+  const onClose = () => {
+    setConnected(false);
+    setTransferProgress(null);
+    setNewFileName('');
+    networkStore.setState({ modals: { ...store.modals, ftp: false } });
+  };
 
   const handleConnect = () => {
     setConnected(true);

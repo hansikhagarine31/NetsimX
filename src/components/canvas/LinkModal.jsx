@@ -3,11 +3,11 @@ import { networkStore } from '../../store/networkStore';
 import { X, Activity, DollarSign, Wifi } from 'lucide-react';
 
 export function LinkModal({ link, onClose }) {
-  if (!link) return null;
+  const [cost, setCost] = useState(link?.data?.cost || 1);
+  const [bandwidth, setBandwidth] = useState(link?.data?.bandwidth || '100Mbps');
+  const [status, setStatus] = useState(link?.data?.status || 'up');
 
-  const [cost, setCost] = useState(link.data?.cost || 1);
-  const [bandwidth, setBandwidth] = useState(link.data?.bandwidth || '100Mbps');
-  const [status, setStatus] = useState(link.data?.status || 'up');
+  if (!link) return null;
 
   const handleSave = () => {
     networkStore.updateLinkData(link.id, {
