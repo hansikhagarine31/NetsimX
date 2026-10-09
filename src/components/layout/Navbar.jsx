@@ -17,6 +17,7 @@ import {
 import { TEMPLATES } from '../../data/networkTemplates.js';
 import { createPacket } from '../../simulation/packetFactory.js';
 import { stepSimulationPacket } from '../../simulation/simulationEngine.js';
+import { startPacketSimulation, stopPacketSimulation } from '../../simulation/simulationController.js';
 
 export function Navbar() {
   const store = useNetworkStore();
@@ -38,24 +39,12 @@ export function Navbar() {
       return;
     }
 
-    const pkt = createPacket({
+    startPacketSimulation({
       sourceNode: pc1,
       targetNode: server1,
       protocol: 'TCP',
       payload: 'GET /index.html HTTP/1.1'
     });
-
-    // Step packet traversal
-    const res = stepSimulationPacket(pkt, store.nodes, store.links);
-    networkStore.setState({
-      simulationState: {
-        ...sim,
-        packets: [res.packet],
-        selectedPacketId: res.packet.id
-      },
-      activeTab: 'inspector'
-    });
-    networkStore.addLog(`Demo Packet generated from ${pc1.data.name} to ${server1.data.name}. Dynamic Dijkstra route evaluated.`);
   };
 
   return (
@@ -110,8 +99,9 @@ export function Navbar() {
 
         <button
           onClick={() => {
+            stopPacketSimulation();
             networkStore.setState({
-              simulationState: { ...sim, packets: [] }
+              simulationState: { ...sim, packets: [], isRunning: false }
             });
             networkStore.addLog('Simulation reset.');
           }}

@@ -36,6 +36,12 @@ export function BottomPanel() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
 
+  useEffect(() => {
+    if (store.bottomPanelCollapsed !== undefined) {
+      setIsCollapsed(store.bottomPanelCollapsed);
+    }
+  }, [store.bottomPanelCollapsed]);
+
   const activeTab = store.activeTab || 'console';
 
   return (
@@ -85,7 +91,11 @@ export function BottomPanel() {
             {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
           <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={() => {
+              const next = !isCollapsed;
+              setIsCollapsed(next);
+              networkStore.setState({ bottomPanelCollapsed: next });
+            }}
             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
             title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
           >

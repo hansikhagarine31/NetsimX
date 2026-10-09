@@ -19,13 +19,31 @@ export const DeviceNode = React.memo(({ data, selected }) => {
   return (
     <div
       className={`relative px-4 py-3 rounded-xl border-2 transition-all duration-200 cursor-pointer min-w-[140px] shadow-lg ${
-        selected
+        data?.hasPacket
+          ? 'border-amber-400 bg-slate-900/95 ring-4 ring-amber-400/40 shadow-amber-400/30 scale-[1.03]'
+          : data?.isDelivered
+          ? 'border-emerald-400 bg-slate-900/95 ring-4 ring-emerald-400/40 shadow-emerald-400/30'
+          : selected
           ? 'border-cyan-400 bg-slate-900/95 ring-4 ring-cyan-500/20 shadow-cyan-500/20'
           : isOff
           ? 'border-slate-700 bg-slate-950/80 opacity-60'
           : 'border-slate-800 bg-slate-900/90 hover:border-slate-700 hover:bg-slate-900'
       }`}
     >
+      {/* Floating Packet Active Badge */}
+      {data?.hasPacket && (
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 bg-gradient-to-r from-amber-400 to-cyan-400 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-cyan-500/50 animate-bounce whitespace-nowrap uppercase tracking-wider">
+          <span>📦</span>
+          <span>{data.packetProtocol || 'PACKET'}</span>
+        </div>
+      )}
+      {data?.isDelivered && (
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 bg-emerald-500 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-emerald-500/50 whitespace-nowrap uppercase tracking-wider">
+          <span>✅</span>
+          <span>DELIVERED</span>
+        </div>
+      )}
+
       {/* Top Handle for Connection */}
       <Handle
         type="target"

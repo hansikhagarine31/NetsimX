@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNetworkStore, networkStore } from '../../store/networkStore.js';
 import { validateDeviceConfig } from '../../algorithms/ipValidator.js';
-import { createPacket } from '../../simulation/packetFactory.js';
-import { stepSimulationPacket } from '../../simulation/simulationEngine.js';
+import { startPacketSimulation } from '../../simulation/simulationController.js';
 import {
   Settings,
   Power,
@@ -12,7 +11,8 @@ import {
   CheckCircle,
   Network,
   Globe,
-  HardDrive
+  HardDrive,
+  Loader2
 } from 'lucide-react';
 
 export function SidebarRight() {
@@ -29,6 +29,8 @@ export function SidebarRight() {
 
   const [validationResult, setValidationResult] = useState({ isValid: true, errors: [], warnings: [] });
   const [targetSelectId, setTargetSelectId] = useState('');
+  const [protocol, setProtocol] = useState('ICMP');
+  const isTransmitting = Boolean(store.simulationState?.isRunning);
 
   useEffect(() => {
     if (selectedNode) {
@@ -78,27 +80,16 @@ export function SidebarRight() {
   };
 
   const handleSendPacket = () => {
-    if (!targetSelectId) return;
+    if (!targetSelectId || isTransmitting) return;
     const targetNode = store.nodes.find(n => n.id === targetSelectId);
     if (!targetNode) return;
 
-    const pkt = createPacket({
+    startPacketSimulation({
       sourceNode: selectedNode,
       targetNode,
-      protocol: 'ICMP',
-      payload: `PING FROM ${selectedNode.data?.name}`
+      protocol,
+      payload: `${protocol} transmission from ${selectedNode.data?.name}`
     });
-
-    const res = stepSimulationPacket(pkt, store.nodes, store.links);
-    networkStore.setState({
-      simulationState: {
-        ...store.simulationState,
-        packets: [res.packet],
-        selectedPacketId: res.packet.id
-      },
-      activeTab: 'inspector'
-    });
-    networkStore.addLog(`Packet initiated from ${selectedNode.data?.name} to ${targetNode.data?.name}`);
   };
 
   const handleDelete = () => {
@@ -221,10 +212,21 @@ export function SidebarRight() {
 
         {/* Quick Send Packet Tool */}
         <div className="pt-3 border-t border-slate-800 space-y-2">
-          <h4 className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-            <Send className="w-3.5 h-3.5 text-cyan-400" />
-            Send Packet Simulation
-          </h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <Send className="w-3.5 h-3.5 text-cyan-400" />
+              Send Packet Simulation
+            </h4>
+            <select
+              value={protocol}
+              onChange={e => setProtocol(e.target.value)}
+              className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-0.5 text-[11px] font-mono text-cyan-400 font-bold"
+            >
+              <option value="ICMP">ICMP</option>
+              <option value="TCP">TCP</option>
+              <option value="UDP">UDP</option>
+            </select>
+          </div>
           <div className="flex gap-2">
             <select
               value={targetSelectId}
@@ -242,10 +244,24 @@ export function SidebarRight() {
             </select>
             <button
               onClick={handleSendPacket}
-              disabled={!targetSelectId || formData.status === 'off'}
-              className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-slate-950 font-bold text-xs shadow-md"
+              disabled={!targetSelectId || formData.status === 'off' || isTransmitting}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs shadow-md transition-all ${
+                isTransmitting
+                  ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300'
+                  : 'bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-slate-950'
+              }`}
             >
-              Send
+              {isTransmitting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Sending...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Send</span>
+                </>
+              )}
             </button>
           </div>
         </div>
