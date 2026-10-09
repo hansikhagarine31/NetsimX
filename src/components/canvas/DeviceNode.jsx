@@ -1,5 +1,6 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
+import { useNetworkStore } from '../../store/networkStore.js';
 import { Monitor, Laptop, Server, Router, Network, Cpu, Cloud, ZapOff } from 'lucide-react';
 
 const DEVICE_ICONS = {
@@ -12,16 +13,23 @@ const DEVICE_ICONS = {
   cloud: Cloud
 };
 
-export const DeviceNode = React.memo(({ data, selected }) => {
-  const DeviceIcon = DEVICE_ICONS[data.deviceType] || Monitor;
-  const isOff = data.status === 'off';
+export const DeviceNode = React.memo(({ id, data, selected }) => {
+  const store = useNetworkStore();
+  const currentPacket = store.simulationState?.packets?.[0];
+  const activeNodeId = currentPacket?.path?.[currentPacket?.currentHopIndex];
+  const hasPacket = Boolean(id && id === activeNodeId);
+  const isDelivered = Boolean(currentPacket?.status === 'DELIVERED' && id && id === currentPacket?.targetId);
+  const packetProtocol = currentPacket?.protocol || 'PACKET';
+
+  const DeviceIcon = (data?.deviceType && DEVICE_ICONS[data.deviceType]) || Monitor;
+  const isOff = data?.status === 'off';
 
   return (
     <div
       className={`relative px-4 py-3 rounded-xl border-2 transition-all duration-200 cursor-pointer min-w-[140px] shadow-lg ${
-        data?.hasPacket
+        hasPacket
           ? 'border-amber-400 bg-slate-900/95 ring-4 ring-amber-400/40 shadow-amber-400/30 scale-[1.03]'
-          : data?.isDelivered
+          : isDelivered
           ? 'border-emerald-400 bg-slate-900/95 ring-4 ring-emerald-400/40 shadow-emerald-400/30'
           : selected
           ? 'border-cyan-400 bg-slate-900/95 ring-4 ring-cyan-500/20 shadow-cyan-500/20'
@@ -31,13 +39,13 @@ export const DeviceNode = React.memo(({ data, selected }) => {
       }`}
     >
       {/* Floating Packet Active Badge */}
-      {data?.hasPacket && (
+      {hasPacket && (
         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 bg-gradient-to-r from-amber-400 to-cyan-400 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-cyan-500/50 animate-bounce whitespace-nowrap uppercase tracking-wider">
           <span>📦</span>
-          <span>{data.packetProtocol || 'PACKET'}</span>
+          <span>{packetProtocol}</span>
         </div>
       )}
-      {data?.isDelivered && (
+      {isDelivered && (
         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 bg-emerald-500 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-emerald-500/50 whitespace-nowrap uppercase tracking-wider">
           <span>✅</span>
           <span>DELIVERED</span>

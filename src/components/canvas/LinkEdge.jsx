@@ -1,9 +1,12 @@
 import React from 'react';
 import { BaseEdge, EdgeLabelRenderer, getBezierPath } from '@xyflow/react';
+import { useNetworkStore } from '../../store/networkStore.js';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export const LinkEdge = React.memo(({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -13,6 +16,29 @@ export const LinkEdge = React.memo(({
   data,
   selected
 }) => {
+  const store = useNetworkStore();
+  const currentPacket = store.simulationState?.packets?.[0];
+  const activeNodeId = currentPacket?.path?.[currentPacket?.currentHopIndex];
+  const prevNodeId =
+    currentPacket && currentPacket.currentHopIndex > 0
+      ? currentPacket.path?.[currentPacket.currentHopIndex - 1]
+      : null;
+  const pathEdgeIds = new Set(currentPacket?.pathEdges || []);
+
+  const isCurrentHop = Boolean(
+    prevNodeId &&
+    activeNodeId &&
+    ((source === prevNodeId && target === activeNodeId) ||
+     (source === activeNodeId && target === prevNodeId))
+  );
+  const isInPath =
+    pathEdgeIds.has(id) ||
+    Boolean(
+      currentPacket?.path &&
+      currentPacket.path.includes(source) &&
+      currentPacket.path.includes(target)
+    );
+
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -25,8 +51,8 @@ export const LinkEdge = React.memo(({
   const isUp = data?.status === 'up' || data?.status === undefined;
   const cost = data?.cost || 1;
   const bandwidth = data?.bandwidth || '100Mbps';
-  const isTraversing = Boolean(data?.isTraversing);
-  const isInPath = Boolean(data?.isInPath);
+  const isTraversing = isCurrentHop;
+  const packetProtocol = currentPacket?.protocol || 'PKT';
 
   return (
     <>
