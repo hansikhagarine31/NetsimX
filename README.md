@@ -207,17 +207,3 @@ NetsimX was developed as a **Computer Networks course project** covering:
 - Network Layer: IP Addressing, Subnetting, Routing Algorithms
 - Transport/Application Layer: Protocol simulation (FTP, ICMP)
 
----
-
-## 👤 Author
-
-**Hansi Khagarine**  
-GitHub: [@hansikhagarine31](https://github.com/hansikhagarine31)
-
----
-
-<div align="center">
-
-⭐ If you found this project helpful, please consider giving it a star!
-
-</div>
