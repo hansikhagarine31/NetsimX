@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNetworkStore, networkStore } from '../../store/networkStore.js';
 import { ConsoleTab } from './ConsoleTab.jsx';
 import { PacketInspector } from './PacketInspector.jsx';
